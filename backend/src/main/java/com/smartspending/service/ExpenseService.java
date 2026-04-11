@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ExpenseService {
@@ -22,12 +23,12 @@ public class ExpenseService {
     private AnalysisService analysisService;
 
     public Expense addExpense(Long userId, Expense expense) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
         expense.setUser(user);
         Expense saved = expenseRepository.save(expense);
         
-        // Trigger async or sync analysis after adding an expense
+        // Trigger analysis after adding an expense
         analysisService.analyzeSpending(userId);
         
         return saved;
@@ -38,17 +39,17 @@ public class ExpenseService {
     }
 
     public void deleteExpense(Long id, Long userId) {
-        Expense expense = expenseRepository.findById(id)
+        Expense expense = expenseRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new RuntimeException("Expense not found"));
         if (!expense.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized");
         }
-        expenseRepository.deleteById(id);
+        expenseRepository.deleteById(Objects.requireNonNull(id));
         analysisService.analyzeSpending(userId);
     }
 
     public Expense updateExpense(Long id, Long userId, Expense expenseDetails) {
-        Expense expense = expenseRepository.findById(id)
+        Expense expense = expenseRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new RuntimeException("Expense not found"));
         if (!expense.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized");
