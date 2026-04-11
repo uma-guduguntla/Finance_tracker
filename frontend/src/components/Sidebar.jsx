@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, LineChart, LogOut, Wallet } from 'lucide-react';
+import { LayoutDashboard, Receipt, LineChart, LogOut, Wallet, AlertTriangle } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
 const Sidebar = () => {
@@ -10,6 +10,7 @@ const Sidebar = () => {
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/expenses', icon: Receipt, label: 'Expenses' },
     { to: '/analytics', icon: LineChart, label: 'Analytics' },
+    { to: '/money-leaks', icon: AlertTriangle, label: 'Money Leaks' },
   ];
 
   return (

@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Expenses from './pages/Expenses';
 import Analytics from './pages/Analytics';
+import MoneyLeaks from './pages/MoneyLeaks';
 import Layout from './components/Layout';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/money-leaks" element={<MoneyLeaks />} />
           </Route>
         </Routes>
       </AuthProvider>
