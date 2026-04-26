@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Plus, Trash2, Edit2, Filter, X } from 'lucide-react';
+import useScrollAnimation from '../hooks/useScrollAnimation';
 
-const CATEGORIES = ['All', 'Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Others'];
+const CATEGORIES = ['All', 'Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Utilities', 'Others'];
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
@@ -19,6 +20,8 @@ const Expenses = () => {
   const [category, setCategory] = useState(CATEGORIES[1]);
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+  useScrollAnimation();
 
   useEffect(() => {
     fetchExpenses();
@@ -99,15 +102,15 @@ const Expenses = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+    <div className="max-w-6xl mx-auto" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="animate-on-scroll" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-           <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Expenses</h1>
-           <p className="text-slate-500 mt-1">Manage and track your transactions</p>
+           <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold' }}>Expenses</h1>
+           <p className="text-muted">Manage and track your transactions</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(!showForm); }}
-          className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition shadow-sm w-full md:w-auto"
+          className="neu-button neu-button-primary"
         >
           {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
           {showForm ? 'Cancel' : 'Add Expense'}
@@ -115,14 +118,15 @@ const Expenses = () => {
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row items-center gap-4 shadow-sm">
-        <div className="flex items-center gap-2 text-slate-500 font-medium">
+      <div className="neu-card animate-on-scroll delay-100" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', padding: '1rem 1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600', color: 'var(--primary)' }}>
           <Filter className="w-5 h-5" /> Filters:
         </div>
         <select
           value={filterCategory}
           onChange={e => setFilterCategory(e.target.value)}
-          className="px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 bg-white"
+          className="neu-input"
+          style={{ width: 'auto', padding: '8px 12px' }}
         >
           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
@@ -130,106 +134,117 @@ const Expenses = () => {
           type="date"
           value={filterDate}
           onChange={e => setFilterDate(e.target.value)}
-          className="px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 bg-white text-slate-700"
+          className="neu-input"
+          style={{ width: 'auto', padding: '8px 12px' }}
         />
         {(filterCategory !== 'All' || filterDate) && (
-          <button onClick={clearFilters} className="text-sm text-blue-600 hover:underline">
+          <button onClick={clearFilters} style={{ background: 'none', border: 'none', color: 'var(--danger)', fontWeight: '600', cursor: 'pointer', padding: '8px' }}>
             Clear Filters
           </button>
         )}
       </div>
 
-      {/* Form Section */}
+      {/* Table Section */}
+      <div className="neu-card animate-on-scroll delay-150" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid rgba(124, 58, 237, 0.1)' }}>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: '600', color: 'var(--muted)', fontSize: '0.875rem' }}>Date</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: '600', color: 'var(--muted)', fontSize: '0.875rem' }}>Description</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: '600', color: 'var(--muted)', fontSize: '0.875rem' }}>Category</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: '600', color: 'var(--muted)', fontSize: '0.875rem', textAlign: 'right' }}>Amount</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: '600', color: 'var(--muted)', fontSize: '0.875rem', textAlign: 'center' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredExpenses.map((expense) => (
+                <tr key={expense.id} style={{ borderBottom: '1px solid rgba(124, 58, 237, 0.05)', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--card-bg)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <td style={{ padding: '1rem 1.5rem', color: 'var(--text)' }}>{new Date(expense.date).toLocaleDateString()}</td>
+                  <td style={{ padding: '1rem 1.5rem', fontWeight: '600' }}>{expense.description}</td>
+                  <td style={{ padding: '1rem 1.5rem' }}>
+                    <span style={{ padding: '4px 12px', background: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: '600', borderRadius: '9999px' }}>
+                      {expense.category}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem', textAlign: 'right', fontWeight: 'bold' }}>₹{expense.amount.toFixed(2)}</td>
+                  <td style={{ padding: '1rem 1.5rem', textAlign: 'center' }}>
+                    <button onClick={() => handleEditClick(expense)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: 'var(--primary)' }}>
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(expense.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: 'var(--danger)' }}>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {filteredExpenses.length === 0 && (
+                <tr>
+                  <td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: 'var(--muted)' }}>
+                    No expenses found matching the criteria.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Form Modal */}
       {showForm && (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 animate-in fade-in slide-in-from-top-4 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
-          <h2 className="text-lg font-bold text-slate-800 mb-4">{editingId ? 'Edit Expense' : 'New Expense'}</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Amount ($)</label>
-              <input
-                type="number" step="0.01" required value={amount}
-                onChange={e => setAmount(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-              <select
-                value={category} onChange={e => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white"
-              >
-                {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
-              <input
-                type="text" required value={description}
-                onChange={e => setDescription(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Date</label>
-              <input
-                type="date" required value={date}
-                onChange={e => setDate(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white text-slate-800"
-              />
-            </div>
-            <div className="md:col-span-2 flex justify-end gap-3 pt-2">
-              <button type="submit" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-blue-700 transition shadow-sm shadow-blue-200">
-                {editingId ? 'Save Changes' : 'Add Transaction'}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30, 27, 75, 0.5)', backdropFilter: 'blur(4px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="neu-card" style={{ width: '100%', maxWidth: '600px', animation: 'fadeIn 0.2s ease-out' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{editingId ? 'Edit Expense' : 'New Expense'}</h2>
+              <button onClick={resetForm} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)' }}>
+                <X className="w-5 h-5" />
               </button>
             </div>
-          </form>
+            
+            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem' }}>Amount (₹)</label>
+                <input
+                  type="number" step="0.01" required value={amount}
+                  onChange={e => setAmount(e.target.value)}
+                  className="neu-input"
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem' }}>Category</label>
+                <select
+                  value={category} onChange={e => setCategory(e.target.value)}
+                  className="neu-input"
+                >
+                  {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem' }}>Description</label>
+                <input
+                  type="text" required value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  className="neu-input"
+                />
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem' }}>Date</label>
+                <input
+                  type="date" required value={date}
+                  onChange={e => setDate(e.target.value)}
+                  className="neu-input"
+                />
+              </div>
+              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                <button type="button" onClick={resetForm} className="neu-button" style={{ fontWeight: '600' }}>Cancel</button>
+                <button type="submit" className="neu-button neu-button-primary">
+                  {editingId ? 'Save Changes' : 'Add Transaction'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
-
-      {/* Table Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="py-4 px-6 font-medium text-slate-500 text-sm">Date</th>
-              <th className="py-4 px-6 font-medium text-slate-500 text-sm">Description</th>
-              <th className="py-4 px-6 font-medium text-slate-500 text-sm">Category</th>
-              <th className="py-4 px-6 font-medium text-slate-500 text-sm text-right">Amount</th>
-              <th className="py-4 px-6 font-medium text-slate-500 text-sm text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredExpenses.map((expense) => (
-              <tr key={expense.id} className="hover:bg-slate-50 transition-colors">
-                <td className="py-4 px-6 text-slate-600">{new Date(expense.date).toLocaleDateString()}</td>
-                <td className="py-4 px-6 font-medium text-slate-800">{expense.description}</td>
-                <td className="py-4 px-6">
-                  <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full border border-blue-100">
-                    {expense.category}
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-right font-medium text-slate-800">${expense.amount.toFixed(2)}</td>
-                <td className="py-4 px-6 text-center space-x-2">
-                  <button onClick={() => handleEditClick(expense)} className="text-slate-400 hover:text-blue-500 transition-colors bg-white p-2 rounded-lg hover:bg-blue-50">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleDelete(expense.id)} className="text-slate-400 hover:text-red-500 transition-colors bg-white p-2 rounded-lg hover:bg-red-50">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filteredExpenses.length === 0 && (
-              <tr>
-                <td colSpan="5" className="py-12 text-center text-slate-500">
-                  No expenses found matching the criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 };

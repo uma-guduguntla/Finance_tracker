@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { TrendingUp, TrendingDown, Calendar, DollarSign, CreditCard, AlertCircle } from 'lucide-react';
+import useScrollAnimation from '../hooks/useScrollAnimation';
 
 const NON_ESSENTIAL = ['Shopping', 'Entertainment', 'Others'];
 
@@ -9,6 +10,7 @@ const Analytics = () => {
   const [leaks, setLeaks] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  useScrollAnimation();
 
   useEffect(() => { fetchData(); }, []);
 
@@ -72,144 +74,146 @@ const Analytics = () => {
   const topCategories = categoryBarData.slice(0, 3);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '16rem' }}>
+      <div className="animate-spin" style={{ width: '32px', height: '32px', border: '4px solid var(--primary)', borderBottomColor: 'transparent', borderRadius: '50%' }} />
     </div>
   );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Spending Analytics</h1>
-        <p className="text-slate-500 mt-1">Deep insights into your financial behavior</p>
+    <div className="max-w-6xl mx-auto" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="animate-on-scroll">
+        <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold' }}>Spending Analytics</h1>
+        <p className="text-muted">Deep insights into your financial behavior</p>
       </div>
 
       {/* 4 Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">30-Day Total</span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-indigo-600" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+        <div className="neu-card animate-on-scroll delay-100" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>30-Day Total</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <DollarSign className="w-5 h-5 text-primary" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-800">${total30.toFixed(2)}</p>
+          <p style={{ fontSize: '1.875rem', fontWeight: '900' }}>₹{total30.toFixed(2)}</p>
           {percentChange30 !== null && (
-            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${total30 > totalPrev30 ? 'text-red-500' : 'text-emerald-500'}`}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: '600', marginTop: '8px', color: total30 > totalPrev30 ? 'var(--danger)' : 'var(--success)' }}>
               {total30 > totalPrev30 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
               {Math.abs(percentChange30)}% vs last period
             </div>
           )}
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Daily Average</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-blue-600" />
+        <div className="neu-card animate-on-scroll delay-150" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Daily Average</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Calendar className="w-5 h-5 text-secondary" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-800">${dailyAvg.toFixed(2)}</p>
-          <p className="text-xs text-slate-400 mt-1">{last30.length} transactions</p>
+          <p style={{ fontSize: '1.875rem', fontWeight: '900' }}>₹{dailyAvg.toFixed(2)}</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '8px' }}>{last30.length} transactions</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Essential</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-emerald-600" />
+        <div className="neu-card animate-on-scroll delay-300" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Essential</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(52, 211, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CreditCard className="w-5 h-5 text-success" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-800">${essentialSpent.toFixed(2)}</p>
-          <p className="text-xs text-slate-400 mt-1">{essentialPercent}% of total</p>
+          <p style={{ fontSize: '1.875rem', fontWeight: '900' }}>₹{essentialSpent.toFixed(2)}</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '8px' }}>{essentialPercent}% of total</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Non-Essential</span>
-            <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center">
-              <TrendingDown className="w-5 h-5 text-orange-500" />
+        <div className="neu-card animate-on-scroll delay-450" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Non-Essential</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TrendingDown className="w-5 h-5 text-warning" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-800">${nonEssentialSpent.toFixed(2)}</p>
-          <p className="text-xs text-slate-400 mt-1">{nonEssentialPercent}% of total</p>
+          <p style={{ fontSize: '1.875rem', fontWeight: '900' }}>₹{nonEssentialSpent.toFixed(2)}</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '8px' }}>{nonEssentialPercent}% of total</p>
         </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96">
-          <h3 className="text-base font-semibold text-slate-800 mb-4">Category Distribution</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
+        <div className="neu-card animate-on-scroll" style={{ height: '24rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Category Distribution</h3>
           {categoryBarData.length > 0 ? (
             <ResponsiveContainer width="100%" height="85%">
               <BarChart data={categoryBarData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
-                <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 12, fontWeight: 500 }} width={90} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} formatter={(v) => [`$${v.toFixed(2)}`, 'Amount']} />
-                <Bar dataKey="value" fill="#6366f1" radius={[0, 8, 8, 0]} barSize={28} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1C4E9" />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
+                <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#1F2937', fontSize: 12, fontWeight: 500 }} width={90} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', background: 'var(--card-bg)' }} formatter={(v) => [`₹${v.toFixed(2)}`, 'Amount']} />
+                <Bar dataKey="value" fill="var(--primary)" radius={[0, 8, 8, 0]} barSize={28} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-slate-400">No spending data yet</div>
+            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No spending data yet</div>
           )}
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96">
-          <h3 className="text-base font-semibold text-slate-800 mb-4">Weekly Spending Trend</h3>
+        <div className="neu-card animate-on-scroll" style={{ height: '24rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Weekly Spending Trend</h3>
           <ResponsiveContainer width="100%" height="85%">
             <LineChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-              <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} formatter={(v) => [`$${v.toFixed(2)}`, 'Spent']} />
-              <Line type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 4, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D1C4E9" />
+              <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
+              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', background: 'var(--card-bg)' }} formatter={(v) => [`₹${v.toFixed(2)}`, 'Spent']} />
+              <Line type="monotone" dataKey="amount" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--card-bg)' }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Bottom Row: Spending Alerts + Top Categories */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Spending Alerts (from rule-based backend engine) */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 className="text-base font-semibold text-slate-800 mb-4">Spending Alerts</h3>
+      {/* Bottom Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div className="neu-card animate-on-scroll" style={{ gridColumn: 'span 2' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Spending Alerts</h3>
           {leaks.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-slate-500 text-sm">No spending alerts right now. Your habits look good.</p>
+            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+              <p style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>No spending alerts right now. Your habits look good.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {leaks.map(leak => (
-                <div key={leak.id} className="p-4 bg-amber-50 rounded-xl border border-amber-200">
-                  <div className="flex items-center gap-2 mb-1">
-                    <AlertCircle className="w-4 h-4 text-amber-600" />
-                    <h4 className="font-semibold text-amber-900 text-sm">{leak.type.replace(/_/g, ' ')}</h4>
+                <div key={leak.id} style={{ padding: '1rem', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <AlertCircle className="w-4 h-4 text-warning" />
+                    <h4 style={{ fontWeight: '600', color: '#92400E', fontSize: '0.875rem' }}>{leak.type.replace(/_/g, ' ')}</h4>
                   </div>
-                  <p className="text-sm text-amber-800 leading-relaxed">{leak.explanation}</p>
+                  <p style={{ fontSize: '0.875rem', color: '#B45309', lineHeight: '1.5' }}>{leak.description}</p>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Top Categories */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 className="text-base font-semibold text-slate-800 mb-4">Top Spending</h3>
-          <div className="space-y-4">
+        <div className="neu-card animate-on-scroll">
+          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Top Spending</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {topCategories.map((cat, i) => {
-              const colors = ['bg-indigo-50 text-indigo-700 border-indigo-100', 'bg-emerald-50 text-emerald-700 border-emerald-100', 'bg-amber-50 text-amber-700 border-amber-100'];
+              const colors = [
+                { bg: 'rgba(124, 58, 237, 0.1)', border: 'rgba(124, 58, 237, 0.2)', text: 'var(--primary)' },
+                { bg: 'rgba(52, 211, 153, 0.1)', border: 'rgba(52, 211, 153, 0.2)', text: 'var(--success)' },
+                { bg: 'rgba(251, 191, 36, 0.1)', border: 'rgba(251, 191, 36, 0.2)', text: 'var(--warning)' }
+              ];
+              const c = colors[i] || colors[0];
               return (
-                <div key={cat.name} className={`p-4 rounded-xl border ${colors[i]}`}>
-                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-50">#{i + 1}</p>
-                  <h4 className="text-lg font-bold mt-1">{cat.name}</h4>
-                  <p className="text-2xl font-black mt-1">${cat.value.toFixed(2)}</p>
+                <div key={cat.name} style={{ padding: '1rem', borderRadius: '12px', background: c.bg, border: `1px solid ${c.border}` }}>
+                  <p style={{ fontSize: '0.625rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.7, color: c.text }}>#{i + 1}</p>
+                  <h4 style={{ fontSize: '1.125rem', fontWeight: 'bold', marginTop: '4px', color: c.text }}>{cat.name}</h4>
+                  <p style={{ fontSize: '1.5rem', fontWeight: '900', marginTop: '4px', color: c.text }}>₹{cat.value.toFixed(2)}</p>
                 </div>
               );
             })}
             {topCategories.length === 0 && (
-              <div className="text-center py-8 text-slate-400 text-sm border border-dashed border-slate-200 rounded-xl">
+              <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--muted)', fontSize: '0.875rem', border: '1px dashed #D1C4E9', borderRadius: '12px' }}>
                 Add expenses to see rankings
               </div>
             )}

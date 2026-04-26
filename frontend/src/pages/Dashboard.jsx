@@ -2,26 +2,32 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, ArrowRight, AlertTriangle, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, ArrowRight, AlertTriangle, ShieldCheck, Sparkles, Loader2, Zap } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import useScrollAnimation from '../hooks/useScrollAnimation';
 
 const CATEGORY_COLORS_MAP = {
-  Food: 'bg-orange-100 text-orange-700',
-  Transport: 'bg-blue-100 text-blue-700',
-  Shopping: 'bg-pink-100 text-pink-700',
-  Bills: 'bg-yellow-100 text-yellow-700',
-  Entertainment: 'bg-purple-100 text-purple-700',
-  Others: 'bg-slate-100 text-slate-700',
+  Food: { bg: '#FFEDD5', color: '#C2410C' },
+  Transport: { bg: '#DBEAFE', color: '#1D4ED8' },
+  Shopping: { bg: '#FCE7F3', color: '#BE185D' },
+  Bills: { bg: '#FEF3C7', color: '#B45309' },
+  Entertainment: { bg: '#F3E8FF', color: '#7E22CE' },
+  Others: { bg: '#F1F5F9', color: '#334155' },
+  Utilities: { bg: '#CCFBF1', color: '#0F766E' }
 };
+
+const COLORS = ['#7C3AED', '#34D399', '#FBBF24', '#F87171', '#06B6D4', '#EC4899', '#8B5CF6'];
 
 const Dashboard = () => {
   const [expenses, setExpenses] = useState([]);
   const [leaks, setLeaks] = useState([]);
+  const [utilities, setUtilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [aiAdvice, setAiAdvice] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  useScrollAnimation();
 
   const handleGetAdvice = async () => {
     setAiLoading(true);
@@ -39,17 +45,26 @@ const Dashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [expRes, leakRes] = await Promise.all([
+      const [expRes, leakRes, utilRes] = await Promise.all([
         api.get('/expenses'),
         api.get('/analysis/leaks'),
+        api.get('/utilities/upcoming').catch(() => ({ data: [] }))
       ]);
       setExpenses(expRes.data);
       setLeaks(leakRes.data);
+      setUtilities(utilRes.data || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
   };
 
   const now = new Date();
@@ -91,7 +106,6 @@ const Dashboard = () => {
   });
   const trendData = Object.entries(trendMap).map(([date, amount]) => ({ date, amount }));
 
-  // Category data
   const categoryData = expenses.reduce((acc, curr) => {
     const existing = acc.find(item => item.name === curr.category);
     if (existing) existing.value += curr.amount;
@@ -99,76 +113,81 @@ const Dashboard = () => {
     return acc;
   }, []);
 
-  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '16rem' }}>
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
     </div>
   );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Dashboard</h1>
-          <p className="text-slate-500 mt-1">Welcome back, {user?.name}</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="animate-on-scroll">
+          <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold' }}>Dashboard</h1>
+          <p className="text-muted">{getGreeting()}, {user?.name} 👋</p>
         </div>
-        <button
-          onClick={() => navigate('/expenses')}
-          className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 hover:bg-indigo-700 transition shadow-md shadow-indigo-200 w-fit"
-        >
+        <button className="neu-button neu-button-primary animate-on-scroll delay-100" onClick={() => navigate('/expenses')}>
           + Add Expense
         </button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">This Month</span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-indigo-600" />
+      {/* 4 Stat Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+        <div className="neu-card animate-on-scroll delay-100" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>This Month</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <DollarSign className="w-5 h-5 text-primary" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-800">${monthlySpent.toFixed(2)}</p>
-          <p className="text-xs text-slate-400 mt-1">{thisMonthExpenses.length} transactions</p>
+          <p style={{ fontSize: '1.875rem', fontWeight: '900' }}>₹{monthlySpent.toFixed(2)}</p>
           {percentChange !== null && (
-            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${monthlySpent > lastMonthSpent ? 'text-red-500' : 'text-emerald-500'}`}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: '600', marginTop: '8px', color: monthlySpent > lastMonthSpent ? 'var(--danger)' : 'var(--success)' }}>
               {monthlySpent > lastMonthSpent ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
               {Math.abs(percentChange)}% vs last month
             </div>
           )}
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Spent</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-emerald-600" />
+        <div className="neu-card animate-on-scroll delay-150" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Total Spent</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(52, 211, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CreditCard className="w-5 h-5 text-success" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-800">${totalSpent.toFixed(2)}</p>
-          <p className="text-xs text-slate-400 mt-1">{expenses.length} total transactions</p>
+          <p style={{ fontSize: '1.875rem', fontWeight: '900' }}>₹{totalSpent.toFixed(2)}</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '8px' }}>{expenses.length} total transactions</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Money Leaks</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
+        <div className="neu-card animate-on-scroll delay-300" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Active Leaks</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(248, 113, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertTriangle className="w-5 h-5 text-danger" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-800">{leaks.length}</p>
-          <p className="text-xs text-slate-400 mt-1">Patterns detected</p>
+          <p style={{ fontSize: '1.875rem', fontWeight: '900' }}>{leaks.length}</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '8px' }}>Patterns detected</p>
+        </div>
+
+        <div className="neu-card animate-on-scroll delay-450" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--muted)' }}>Bills Due</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Zap className="w-5 h-5 text-warning" />
+            </div>
+          </div>
+          <p style={{ fontSize: '1.875rem', fontWeight: '900' }}>{utilities.length}</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '8px' }}>In next 7 days</p>
         </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96">
-          <h3 className="text-base font-semibold text-slate-800 mb-4">Spending by Category</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
+        <div className="neu-card animate-on-scroll" style={{ height: '24rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Spending by Category</h3>
           {categoryData.length > 0 ? (
             <ResponsiveContainer width="100%" height="85%">
               <PieChart>
@@ -177,132 +196,123 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                <Tooltip formatter={(value) => `₹${value.toFixed(2)}`} contentStyle={{ borderRadius: '12px', border: 'none', background: 'var(--card-bg)' }} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-slate-400">No spending data yet</div>
+            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No spending data yet</div>
           )}
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96">
-          <h3 className="text-base font-semibold text-slate-800 mb-4">14-Day Spending Trend</h3>
+        <div className="neu-card animate-on-scroll" style={{ height: '24rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>14-Day Spending Trend</h3>
           <ResponsiveContainer width="100%" height="85%">
             <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} formatter={(v) => [`$${v.toFixed(2)}`, 'Spent']} />
-              <Line type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 3, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D1C4E9" />
+              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
+              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', background: 'var(--card-bg)' }} formatter={(v) => [`₹${v.toFixed(2)}`, 'Spent']} />
+              <Line type="monotone" dataKey="amount" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--card-bg)' }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Money Leak Detection + Recent Expenses */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Money Leak Detection */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-semibold text-slate-800">Money Leak Detection</h3>
-            <button
-              onClick={() => navigate('/money-leaks')}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
-            >
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
+        {/* Leaks */}
+        <div className="neu-card animate-on-scroll">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '600' }}>Money Leak Detection</h3>
+            <button onClick={() => navigate('/leaks')} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
               View All <ArrowRight className="w-4 h-4" />
             </button>
           </div>
           {leaks.length === 0 ? (
-            <div className="flex flex-col items-center text-center py-6">
-              <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mb-3">
-                <ShieldCheck className="w-7 h-7 text-emerald-500" />
+            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(52, 211, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <ShieldCheck className="w-7 h-7 text-success" />
               </div>
-              <h4 className="font-semibold text-slate-800">Great job!</h4>
-              <p className="text-sm text-slate-500 mt-1">No significant spending leaks detected</p>
+              <h4 style={{ fontWeight: '600' }}>Great job!</h4>
+              <p style={{ fontSize: '0.875rem', color: 'var(--muted)', marginTop: '4px' }}>No significant spending leaks detected</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {leaks.slice(0, 3).map(leak => (
-                <div key={leak.id} className="flex gap-3 p-3 bg-amber-50 rounded-xl border border-amber-100">
-                  <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div key={leak.id} style={{ display: 'flex', gap: '12px', padding: '12px', background: 'rgba(248, 113, 113, 0.05)', borderRadius: '12px', border: '1px solid rgba(248, 113, 113, 0.2)' }}>
+                  <AlertTriangle className="w-5 h-5 text-danger flex-shrink-0" />
                   <div>
-                    <p className="font-semibold text-sm text-amber-900">{leak.type.replace(/_/g, ' ')}</p>
-                    <p className="text-xs text-amber-700 mt-0.5 line-clamp-2">{leak.explanation}</p>
+                    <p style={{ fontWeight: '600', fontSize: '0.875rem', color: 'var(--danger)' }}>{leak.type.replace(/_/g, ' ')}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text)', marginTop: '4px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{leak.description}</p>
                   </div>
                 </div>
               ))}
-              {leaks.length > 3 && (
-                <p className="text-xs text-slate-400 text-center">+ {leaks.length - 3} more alerts</p>
-              )}
             </div>
           )}
         </div>
 
         {/* Recent Expenses */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-semibold text-slate-800">Recent Expenses</h3>
-            <button
-              onClick={() => navigate('/expenses')}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
-            >
+        <div className="neu-card animate-on-scroll">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '600' }}>Recent Expenses</h3>
+            <button onClick={() => navigate('/expenses')} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
               View All <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-          <div className="space-y-3">
-            {expenses.slice(0, 5).map(exp => (
-              <div key={exp.id} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-500">
-                    {exp.category.substring(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-800 text-sm">{exp.description}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${CATEGORY_COLORS_MAP[exp.category] || 'bg-slate-100 text-slate-600'}`}>
-                        {exp.category}
-                      </span>
-                      <span className="text-[10px] text-slate-400">{new Date(exp.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {expenses.slice(0, 5).map(exp => {
+              const catStyle = CATEGORY_COLORS_MAP[exp.category] || CATEGORY_COLORS_MAP.Others;
+              return (
+                <div key={exp.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderRadius: '12px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.5)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: catStyle.bg, color: catStyle.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.875rem', fontWeight: 'bold' }}>
+                      {exp.category.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: '600', fontSize: '0.875rem' }}>{exp.description}</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '2px' }}>{new Date(exp.date).toLocaleDateString()}</p>
                     </div>
                   </div>
+                  <p style={{ fontWeight: 'bold', color: 'var(--primary)' }}>₹{exp.amount.toFixed(2)}</p>
                 </div>
-                <p className="font-bold text-slate-800">${exp.amount.toFixed(2)}</p>
-              </div>
-            ))}
-            {expenses.length === 0 && <p className="text-slate-400 text-center py-8 text-sm">No expenses yet. Add your first one!</p>}
+              );
+            })}
+            {expenses.length === 0 && <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '2rem 0', fontSize: '0.875rem' }}>No expenses yet. Add your first one!</p>}
           </div>
         </div>
       </div>
 
-      {/* AI Financial Advisor */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
+      {/* AI Insights Panel */}
+      <div className="animate-on-scroll" style={{
+        background: 'linear-gradient(135deg, #1E1B4B 0%, #7C3AED 100%)',
+        borderRadius: '20px',
+        padding: '24px',
+        boxShadow: '8px 8px 16px #D1C4E9, -8px -8px 16px #FFFFFF',
+        color: 'white'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles className="w-5 h-5 text-accent" />
             AI Financial Advisor
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600">Powered by Gemini</span>
+            <span style={{ fontSize: '0.625rem', padding: '2px 8px', borderRadius: '9999px', background: 'rgba(255,255,255,0.2)', fontWeight: 'bold' }}>Powered by Gemini</span>
           </h3>
-          <button
-            onClick={handleGetAdvice}
-            disabled={aiLoading}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-indigo-700 transition disabled:opacity-50"
-          >
+          <button onClick={handleGetAdvice} disabled={aiLoading} className="neu-button" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>
             {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {aiLoading ? 'Analyzing...' : 'Get Advice'}
           </button>
         </div>
+        
         {aiAdvice ? (
-          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{aiAdvice}</p>
+          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', backdropFilter: 'blur(10px)' }}>
+            <p style={{ fontSize: '0.875rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>{aiAdvice}</p>
           </div>
         ) : (
-          <div className="text-center py-6">
-            <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-3">
-              <Sparkles className="w-6 h-6 text-indigo-400" />
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+              <Sparkles className="w-6 h-6 text-accent" />
             </div>
-            <p className="text-sm text-slate-500">Ready to help you optimize your finances</p>
-            <p className="text-xs text-slate-400 mt-1">Click "Get Advice" for personalized recommendations</p>
+            <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)' }}>Ready to help you optimize your finances</p>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>Click "Get Advice" for personalized recommendations</p>
           </div>
         )}
       </div>

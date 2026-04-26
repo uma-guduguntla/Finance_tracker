@@ -16,12 +16,20 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody User userRequest) {
-        return ResponseEntity.ok(authService.register(userRequest));
+    public ResponseEntity<?> register(@RequestBody User userRequest) {
+        try {
+            return ResponseEntity.ok(authService.register(userRequest));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
-        return ResponseEntity.ok(authService.login(authRequest));
+    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
+        try {
+            return ResponseEntity.ok(authService.login(authRequest));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", "Invalid credentials"));
+        }
     }
 }

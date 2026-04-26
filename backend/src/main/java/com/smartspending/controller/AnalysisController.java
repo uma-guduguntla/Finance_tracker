@@ -1,6 +1,6 @@
 package com.smartspending.controller;
 
-import com.smartspending.entity.LeakExplanation;
+import com.smartspending.entity.MoneyLeak;
 import com.smartspending.entity.User;
 import com.smartspending.repository.UserRepository;
 import com.smartspending.service.AiAdvisorService;
@@ -33,8 +33,11 @@ public class AnalysisController {
     }
 
     @GetMapping("/leaks")
-    public ResponseEntity<List<LeakExplanation>> getLeaks(Authentication auth) {
-        return ResponseEntity.ok(analysisService.getLeaks(getUserId(auth)));
+    public ResponseEntity<List<MoneyLeak>> getLeaks(Authentication auth) {
+        Long userId = getUserId(auth);
+        // Auto-run analysis to ensure leaks are up to date
+        analysisService.analyzeSpending(userId);
+        return ResponseEntity.ok(analysisService.getLeaks(userId));
     }
 
     @GetMapping("/refresh")

@@ -11,9 +11,15 @@ const Layout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex' }}>
       <Sidebar />
-      <main className="flex-1 ml-64 p-8">
+      <main className="page-transition" style={{ 
+        flex: 1, 
+        marginLeft: '260px', 
+        padding: '2rem',
+        maxWidth: 'calc(100vw - 260px)',
+        boxSizing: 'border-box'
+      }}>
         <Outlet />
       </main>
     </div>

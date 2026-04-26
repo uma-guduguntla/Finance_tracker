@@ -1,10 +1,10 @@
 package com.smartspending.service;
 
 import com.smartspending.entity.Expense;
-import com.smartspending.entity.LeakExplanation;
+import com.smartspending.entity.MoneyLeak;
 import com.smartspending.entity.User;
 import com.smartspending.repository.ExpenseRepository;
-import com.smartspending.repository.LeakExplanationRepository;
+import com.smartspending.repository.MoneyLeakRepository;
 import com.smartspending.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,10 +24,14 @@ public class AnalysisService {
     private ExpenseRepository expenseRepository;
 
     @Autowired
-    private LeakExplanationRepository leakExplanationRepository;
+    private MoneyLeakRepository moneyLeakRepository;
 
     @Autowired
     private UserRepository userRepository;
+
+    public List<MoneyLeak> getLeaks(Long userId) {
+        return moneyLeakRepository.findByUserIdOrderByDetectedAtDesc(userId);
+    }
 
     @Transactional
     public void analyzeSpending(Long userId) {
@@ -37,8 +40,8 @@ public class AnalysisService {
 
         List<Expense> expenses = expenseRepository.findByUserIdOrderByDateDesc(userId);
 
-        // Clear previous explanations
-        leakExplanationRepository.deleteByUserId(userId);
+        // Clear previous leaks to avoid duplicates
+        moneyLeakRepository.deleteByUserId(userId);
 
         if (expenses.isEmpty()) return;
 
@@ -55,7 +58,7 @@ public class AnalysisService {
         LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
         List<Expense> recentSmall = expenses.stream()
                 .filter(e -> e.getDate().isAfter(thirtyDaysAgo))
-                .filter(e -> e.getAmount().compareTo(new BigDecimal("20")) < 0)
+                .filter(e -> e.getAmount().compareTo(new BigDecimal("500")) < 0)
                 .collect(Collectors.toList());
 
         if (recentSmall.size() > 5) {
@@ -63,9 +66,9 @@ public class AnalysisService {
                     .map(Expense::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             saveLeak(user, "FREQUENT_SMALL_TRANSACTIONS",
-                    "You made " + recentSmall.size() + " small transactions (under $20) in the last 30 days, " +
-                    "totaling $" + totalSmall.setScale(2, RoundingMode.HALF_UP) +
-                    ". These small purchases often go unnoticed but add up quickly.");
+                    "You made " + recentSmall.size() + " small transactions (under ₹500) in the last 30 days, " +
+                    "totaling ₹" + totalSmall.setScale(2, RoundingMode.HALF_UP) +
+                    ". These small purchases often go unnoticed but add up quickly.", "MEDIUM");
         }
     }
 
@@ -88,10 +91,10 @@ public class AnalysisService {
                         .divide(totalSpent, 1, RoundingMode.HALF_UP);
                 if (percentage.compareTo(BigDecimal.valueOf(60)) > 0) {
                     saveLeak(user, "CATEGORY_DOMINANCE",
-                            entry.getKey() + " accounts for " + percentage + "% of your spending ($" +
-                            entry.getValue().setScale(2, RoundingMode.HALF_UP) + " out of $" +
+                            entry.getKey() + " accounts for " + percentage + "% of your spending (₹" +
+                            entry.getValue().setScale(2, RoundingMode.HALF_UP) + " out of ₹" +
                             totalSpent.setScale(2, RoundingMode.HALF_UP) +
-                            "). Consider setting a budget limit for this category.");
+                            "). Consider setting a budget limit for this category.", "HIGH");
                 }
             }
         }
@@ -120,10 +123,10 @@ public class AnalysisService {
                     .divide(lastMonthSamePoint, 1, RoundingMode.HALF_UP);
             if (increase.compareTo(BigDecimal.valueOf(30)) > 0) {
                 saveLeak(user, "SPENDING_VELOCITY",
-                        "You've spent $" + thisMonthSoFar.setScale(2, RoundingMode.HALF_UP) +
-                        " so far this month — that's " + increase + "% more than the same point last month ($" +
+                        "You've spent ₹" + thisMonthSoFar.setScale(2, RoundingMode.HALF_UP) +
+                        " so far this month — that's " + increase + "% more than the same point last month (₹" +
                         lastMonthSamePoint.setScale(2, RoundingMode.HALF_UP) +
-                        "). Your spending pace is accelerating.");
+                        "). Your spending pace is accelerating.", "HIGH");
             }
         }
     }
@@ -158,9 +161,9 @@ public class AnalysisService {
                 BigDecimal ratio = weekendAvg.divide(weekdayAvg, 2, RoundingMode.HALF_UP);
                 if (ratio.compareTo(BigDecimal.valueOf(2)) > 0) {
                     saveLeak(user, "WEEKEND_OVERSPEND",
-                            "Your weekend spending averages $" + weekendAvg + " per transaction vs $" +
+                            "Your weekend spending averages ₹" + weekendAvg + " per transaction vs ₹" +
                             weekdayAvg + " on weekdays — that's " + ratio + "x more. " +
-                            "Weekend impulse purchases may be a money leak.");
+                            "Weekend impulse purchases may be a money leak.", "MEDIUM");
                 }
             }
         }
@@ -179,8 +182,8 @@ public class AnalysisService {
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 saveLeak(user, "RECURRING_EXPENSE",
                         "\"" + group.get(0).getDescription() + "\" appears " + group.size() +
-                        " times totaling $" + total.setScale(2, RoundingMode.HALF_UP) +
-                        ". This looks like a recurring expense — check if it's necessary.");
+                        " times totaling ₹" + total.setScale(2, RoundingMode.HALF_UP) +
+                        ". This looks like a recurring expense — check if it's necessary.", "LOW");
             }
         }
     }
@@ -204,24 +207,20 @@ public class AnalysisService {
         for (Map.Entry<LocalDate, BigDecimal> entry : dailyTotals.entrySet()) {
             if (entry.getValue().compareTo(spikeThreshold) > 0) {
                 saveLeak(user, "DAILY_SPIKE",
-                        "On " + entry.getKey() + " you spent $" + entry.getValue().setScale(2, RoundingMode.HALF_UP) +
-                        " — that's over 3x your daily average of $" + avg +
-                        ". Check for any unnecessary large purchases.");
+                        "On " + entry.getKey() + " you spent ₹" + entry.getValue().setScale(2, RoundingMode.HALF_UP) +
+                        " — that's over 3x your daily average of ₹" + avg +
+                        ". Check for any unnecessary large purchases.", "HIGH");
                 break; // only report the most recent spike
             }
         }
     }
 
-    private void saveLeak(User user, String type, String explanation) {
-        LeakExplanation leak = new LeakExplanation();
+    private void saveLeak(User user, String type, String explanation, String severity) {
+        MoneyLeak leak = new MoneyLeak();
         leak.setUser(user);
         leak.setType(type);
-        leak.setExplanation(explanation);
-        leak.setDetectedAt(LocalDateTime.now());
-        leakExplanationRepository.save(leak);
-    }
-
-    public List<LeakExplanation> getLeaks(Long userId) {
-        return leakExplanationRepository.findByUserIdOrderByDetectedAtDesc(userId);
+        leak.setDescription(explanation);
+        leak.setSeverity(severity);
+        moneyLeakRepository.save(leak);
     }
 }
