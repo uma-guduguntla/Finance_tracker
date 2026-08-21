@@ -1,4 +1,4 @@
-# Finance_tracker
+# SpendWise
 #  Smart Spending Analyzer
 
 A full-stack financial management system that helps users **track expenses, detect hidden money leaks, and analyze spending behavior** using a rule-based intelligent engine.
