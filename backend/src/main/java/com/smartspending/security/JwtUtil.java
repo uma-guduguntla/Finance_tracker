@@ -26,7 +26,7 @@ public class JwtUtil {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractClaim(token, claims -> claims.getSubject());
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -43,7 +43,7 @@ public class JwtUtil {
     }
 
     public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+        return extractClaim(token, claims -> claims.getExpiration());
     }
 
     public String generateToken(String username) {

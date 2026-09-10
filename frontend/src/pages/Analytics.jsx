@@ -143,15 +143,17 @@ const Analytics = () => {
         <div className="neu-card animate-on-scroll" style={{ height: '24rem' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Category Distribution</h3>
           {categoryBarData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="85%">
-              <BarChart data={categoryBarData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1C4E9" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
-                <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#1F2937', fontSize: 12, fontWeight: 500 }} width={90} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', background: 'var(--card-bg)' }} formatter={(v) => [`₹${v.toFixed(2)}`, 'Amount']} />
-                <Bar dataKey="value" fill="var(--primary)" radius={[0, 8, 8, 0]} barSize={28} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div style={{ minHeight: '320px' }}>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={categoryBarData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1C4E9" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
+                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#1F2937', fontSize: 12, fontWeight: 500 }} width={90} />
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', background: 'var(--card-bg)' }} formatter={(v) => [`₹${v.toFixed(2)}`, 'Amount']} />
+                  <Bar dataKey="value" fill="var(--primary)" radius={[0, 8, 8, 0]} barSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           ) : (
             <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No spending data yet</div>
           )}
@@ -159,15 +161,21 @@ const Analytics = () => {
 
         <div className="neu-card animate-on-scroll" style={{ height: '24rem' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Weekly Spending Trend</h3>
-          <ResponsiveContainer width="100%" height="85%">
-            <LineChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D1C4E9" />
-              <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', background: 'var(--card-bg)' }} formatter={(v) => [`₹${v.toFixed(2)}`, 'Spent']} />
-              <Line type="monotone" dataKey="amount" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--card-bg)' }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
+          {weeklyData.length > 0 ? (
+            <div style={{ minHeight: '320px' }}>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={weeklyData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D1C4E9" />
+                  <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', background: 'var(--card-bg)' }} formatter={(v) => [`₹${v.toFixed(2)}`, 'Spent']} />
+                  <Line type="monotone" dataKey="amount" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--card-bg)' }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>No spending data yet</div>
+          )}
         </div>
       </div>
 

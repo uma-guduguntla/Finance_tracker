@@ -145,6 +145,6 @@ const MoneyLeaks = () => {
       )}
     </div>
   );
-};
+};  
 
 export default MoneyLeaks;

@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UtilityBudgetRepository extends JpaRepository<UtilityBudget, Long> {
-    List<UtilityBudget> findByUserId(Long userId);
-    Optional<UtilityBudget> findByUserIdAndUtilityType(Long userId, Utility.UtilityType utilityType);
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM UtilityBudget u WHERE u.user.id = :userId")
+    List<UtilityBudget> findByUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
+    
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM UtilityBudget u WHERE u.user.id = :userId AND u.utilityType = :utilityType")
+    Optional<UtilityBudget> findByUserIdAndUtilityType(@org.springframework.data.repository.query.Param("userId") Long userId, @org.springframework.data.repository.query.Param("utilityType") Utility.UtilityType utilityType);
 }

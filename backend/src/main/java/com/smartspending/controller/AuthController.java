@@ -1,7 +1,6 @@
 package com.smartspending.controller;
 
 import com.smartspending.dto.AuthRequest;
-import com.smartspending.dto.AuthResponse;
 import com.smartspending.entity.User;
 import com.smartspending.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;

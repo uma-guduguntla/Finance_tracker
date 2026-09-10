@@ -12,8 +12,9 @@ export const setToken = (token) => {
 
 api.interceptors.request.use(
   (config) => {
-    if (inMemoryToken) {
-      config.headers['Authorization'] = `Bearer ${inMemoryToken}`;
+    const token = inMemoryToken || localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },

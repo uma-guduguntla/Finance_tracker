@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
-    List<Budget> findByUserId(Long userId);
-    Optional<Budget> findByUserIdAndCategory(Long userId, String category);
+    @org.springframework.data.jpa.repository.Query("SELECT b FROM Budget b WHERE b.user.id = :userId")
+    List<Budget> findByUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
+    
+    @org.springframework.data.jpa.repository.Query("SELECT b FROM Budget b WHERE b.user.id = :userId AND b.category = :category")
+    Optional<Budget> findByUserIdAndCategory(@org.springframework.data.repository.query.Param("userId") Long userId, @org.springframework.data.repository.query.Param("category") String category);
 }

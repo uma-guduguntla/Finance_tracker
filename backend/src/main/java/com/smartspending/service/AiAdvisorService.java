@@ -82,17 +82,17 @@ public class AiAdvisorService {
                 .collect(Collectors.toList());
 
         BigDecimal totalAll = expenses.stream()
-                .map(Expense::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(e -> e.getAmount())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         BigDecimal total30 = recent.stream()
-                .map(Expense::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(e -> e.getAmount())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         Map<String, BigDecimal> categoryTotals = recent.stream()
                 .collect(Collectors.groupingBy(
-                        Expense::getCategory,
-                        Collectors.reducing(BigDecimal.ZERO, Expense::getAmount, BigDecimal::add)));
+                        e -> e.getCategory(),
+                        Collectors.reducing(BigDecimal.ZERO, e -> e.getAmount(), (a, b) -> a.add(b))));
 
         BigDecimal dailyAvg = total30.divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP);
 

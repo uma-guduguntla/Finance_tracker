@@ -49,7 +49,7 @@ public class BudgetService {
         return result;
     }
 
-    public Budget setOrUpdateBudget(Long userId, String category, BigDecimal monthlyLimit) {
+    public Budget setOrUpdateBudget(@org.springframework.lang.NonNull Long userId, String category, BigDecimal monthlyLimit) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -61,7 +61,7 @@ public class BudgetService {
         return budgetRepository.save(budget);
     }
 
-    public void deleteBudget(Long budgetId, Long userId) {
+    public void deleteBudget(@org.springframework.lang.NonNull Long budgetId, @org.springframework.lang.NonNull Long userId) {
         Budget budget = budgetRepository.findById(budgetId)
                 .orElseThrow(() -> new RuntimeException("Budget not found"));
         if (!budget.getUser().getId().equals(userId)) {

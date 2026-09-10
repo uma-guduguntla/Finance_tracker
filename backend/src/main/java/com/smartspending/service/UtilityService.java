@@ -30,14 +30,14 @@ public class UtilityService {
         return utilityRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    public Utility addUtility(Long userId, Utility utility) {
+    public Utility addUtility(@org.springframework.lang.NonNull Long userId, Utility utility) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         utility.setUser(user);
         return utilityRepository.save(utility);
     }
 
-    public Utility updateUtility(Long id, Long userId, Utility updated) {
+    public Utility updateUtility(@org.springframework.lang.NonNull Long id, @org.springframework.lang.NonNull Long userId, Utility updated) {
         Utility existing = utilityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utility not found"));
         if (!existing.getUser().getId().equals(userId)) {
@@ -52,7 +52,7 @@ public class UtilityService {
         return utilityRepository.save(existing);
     }
 
-    public void deleteUtility(Long id, Long userId) {
+    public void deleteUtility(@org.springframework.lang.NonNull Long id, @org.springframework.lang.NonNull Long userId) {
         Utility existing = utilityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utility not found"));
         if (!existing.getUser().getId().equals(userId)) {
@@ -61,7 +61,7 @@ public class UtilityService {
         utilityRepository.delete(existing);
     }
 
-    public Utility markAsPaid(Long id, Long userId) {
+    public Utility markAsPaid(@org.springframework.lang.NonNull Long id, @org.springframework.lang.NonNull Long userId) {
         Utility existing = utilityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utility not found"));
         if (!existing.getUser().getId().equals(userId)) {
@@ -119,7 +119,7 @@ public class UtilityService {
         return summary;
     }
 
-    public UtilityBudget setUtilityBudget(Long userId, UtilityType utilityType, BigDecimal monthlyLimit) {
+    public UtilityBudget setUtilityBudget(@org.springframework.lang.NonNull Long userId, UtilityType utilityType, BigDecimal monthlyLimit) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         UtilityBudget budget = utilityBudgetRepository

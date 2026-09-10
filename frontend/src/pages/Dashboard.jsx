@@ -34,7 +34,8 @@ const Dashboard = () => {
     try {
       const res = await api.get('/analysis/ai-advice');
       setAiAdvice(res.data.advice);
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to get advice:', error);
       setAiAdvice('Failed to get advice. Please try again.');
     } finally {
       setAiLoading(false);

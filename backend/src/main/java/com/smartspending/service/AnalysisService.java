@@ -63,8 +63,8 @@ public class AnalysisService {
 
         if (recentSmall.size() > 5) {
             BigDecimal totalSmall = recentSmall.stream()
-                    .map(Expense::getAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    .map(e -> e.getAmount())
+                    .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
             saveLeak(user, "FREQUENT_SMALL_TRANSACTIONS",
                     "You made " + recentSmall.size() + " small transactions (under ₹500) in the last 30 days, " +
                     "totaling ₹" + totalSmall.setScale(2, RoundingMode.HALF_UP) +
@@ -78,11 +78,11 @@ public class AnalysisService {
         Map<String, BigDecimal> categoryTotals = expenses.stream()
                 .filter(e -> e.getDate().isAfter(thirtyDaysAgo))
                 .collect(Collectors.groupingBy(
-                        Expense::getCategory,
-                        Collectors.reducing(BigDecimal.ZERO, Expense::getAmount, BigDecimal::add)));
+                        e -> e.getCategory(),
+                        Collectors.reducing(BigDecimal.ZERO, e -> e.getAmount(), (a, b) -> a.add(b))));
 
         BigDecimal totalSpent = categoryTotals.values().stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         for (Map.Entry<String, BigDecimal> entry : categoryTotals.entrySet()) {
             if (totalSpent.compareTo(BigDecimal.ZERO) > 0) {
@@ -109,13 +109,13 @@ public class AnalysisService {
 
         BigDecimal thisMonthSoFar = expenses.stream()
                 .filter(e -> !e.getDate().isBefore(firstOfMonth))
-                .map(Expense::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(e -> e.getAmount())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         BigDecimal lastMonthSamePoint = expenses.stream()
                 .filter(e -> !e.getDate().isBefore(firstOfLastMonth) && e.getDate().isBefore(firstOfLastMonth.plusDays(dayOfMonth)))
-                .map(Expense::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(e -> e.getAmount())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         if (lastMonthSamePoint.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal increase = thisMonthSoFar.subtract(lastMonthSamePoint)
@@ -178,8 +178,8 @@ public class AnalysisService {
             List<Expense> group = entry.getValue();
             if (group.size() >= 3) {
                 BigDecimal total = group.stream()
-                        .map(Expense::getAmount)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        .map(e -> e.getAmount())
+                        .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
                 saveLeak(user, "RECURRING_EXPENSE",
                         "\"" + group.get(0).getDescription() + "\" appears " + group.size() +
                         " times totaling ₹" + total.setScale(2, RoundingMode.HALF_UP) +
@@ -194,13 +194,13 @@ public class AnalysisService {
         Map<LocalDate, BigDecimal> dailyTotals = expenses.stream()
                 .filter(e -> e.getDate().isAfter(fourteenDaysAgo))
                 .collect(Collectors.groupingBy(
-                        Expense::getDate,
-                        Collectors.reducing(BigDecimal.ZERO, Expense::getAmount, BigDecimal::add)));
+                        e -> e.getDate(),
+                        Collectors.reducing(BigDecimal.ZERO, e -> e.getAmount(), (a, b) -> a.add(b))));
 
         if (dailyTotals.size() < 3) return;
 
         BigDecimal avg = dailyTotals.values().stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b))
                 .divide(BigDecimal.valueOf(dailyTotals.size()), 2, RoundingMode.HALF_UP);
 
         BigDecimal spikeThreshold = avg.multiply(BigDecimal.valueOf(3));

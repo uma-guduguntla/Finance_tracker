@@ -17,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/utilities")
+@SuppressWarnings("null")
 public class UtilityController {
 
     @Autowired

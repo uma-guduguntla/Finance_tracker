@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import api from '../services/api';
 import { Plus, Trash2, Edit2, Filter, X } from 'lucide-react';
 import useScrollAnimation from '../hooks/useScrollAnimation';
@@ -7,7 +7,6 @@ const CATEGORIES = ['All', 'Food', 'Transport', 'Shopping', 'Bills', 'Entertainm
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
-  const [filteredExpenses, setFilteredExpenses] = useState([]);
   
   // Filtering state
   const [filterCategory, setFilterCategory] = useState('All');
@@ -23,24 +22,22 @@ const Expenses = () => {
 
   useScrollAnimation();
 
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [expenses, filterCategory, filterDate]);
-
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     try {
       const res = await api.get('/expenses');
       setExpenses(res.data);
     } catch (error) {
       console.error('Failed to fetch expenses', error);
     }
-  };
+  }, []);
 
-  const applyFilters = () => {
+  useEffect(() => {
+    api.get('/expenses')
+      .then(res => setExpenses(res.data))
+      .catch(error => console.error('Failed to fetch expenses', error));
+  }, []);
+
+  const filteredExpenses = useMemo(() => {
     let result = expenses;
     if (filterCategory !== 'All') {
       result = result.filter(e => e.category === filterCategory);
@@ -48,8 +45,8 @@ const Expenses = () => {
     if (filterDate) {
       result = result.filter(e => e.date === filterDate);
     }
-    setFilteredExpenses(result);
-  };
+    return result;
+  }, [expenses, filterCategory, filterDate]);
 
   const resetForm = () => {
     setEditingId(null);

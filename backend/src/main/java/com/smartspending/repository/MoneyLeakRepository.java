@@ -9,7 +9,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface MoneyLeakRepository extends JpaRepository<MoneyLeak, Long> {
-    List<MoneyLeak> findByUserIdOrderByDetectedAtDesc(Long userId);
+    @Query("SELECT m FROM MoneyLeak m WHERE m.user.id = :userId ORDER BY m.detectedAt DESC")
+    List<MoneyLeak> findByUserIdOrderByDetectedAtDesc(@Param("userId") Long userId);
     
     @Modifying
     @Query("DELETE FROM MoneyLeak m WHERE m.user.id = :userId")

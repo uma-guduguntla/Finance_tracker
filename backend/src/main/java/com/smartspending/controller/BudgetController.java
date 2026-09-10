@@ -14,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/budgets")
+@SuppressWarnings("null")
 public class BudgetController {
 
     @Autowired
