@@ -1,5 +1,3 @@
-Replace your entire current README.md with this:
-
 # 💸 SpendWise – Smart Spending Analyzer
 
 > A full-stack personal finance platform that helps users track expenses, monitor budgets, analyze spending behavior, detect potential money leaks, track financial goals, and receive AI-assisted insights.
@@ -32,6 +30,7 @@ Financial Behavior
 Financial Insights
      ↓
 Better Decisions
+
 ✨ Features
 🔐 Authentication
 User registration and login
@@ -39,6 +38,7 @@ JWT-based authentication
 Password hashing
 Protected APIs
 User-level authorization
+
 💰 Expense Management
 Add expenses
 View expenses
@@ -46,10 +46,9 @@ Edit expenses
 Delete expenses
 Categorize transactions
 Search and filter spending
+
 🕵️ Money Leak Detection
-
 Identifies potentially inefficient spending patterns such as:
-
 Frequent small-value transactions
 Recurring expenses
 Category overspending
@@ -75,18 +74,21 @@ Average spending
 Budget utilization
 Expense frequency
 Visual dashboards and charts
+
 💵 Budget Tracking
 Create and monitor budgets
 Track actual spending
 Calculate remaining budget
 Calculate utilization
 Identify overspending
+
 🎯 Financial Goals
 Create financial goals
 Track saved amount
 Calculate progress
 Calculate remaining amount
 Estimate required contribution
+
 💡 Smart Recommendations
 
 Recommendations are generated from:
@@ -100,6 +102,7 @@ Money Leaks
 Goal Progress
        ↓
 Recommendations
+
 🤖 Gemini AI Integration
 
 Google Gemini can provide an additional natural-language intelligence layer.
@@ -171,6 +174,7 @@ ORM	Spring Data JPA / Hibernate
 AI	Google Gemini API
 Build Tool	Maven
 Version Control	Git, GitHub
+
 📁 Project Structure
 SpendWise/
 │
@@ -196,6 +200,7 @@ SpendWise/
 │               └── config/
 │
 └── README.md
+
 🔌 API Overview
 Authentication
 POST /api/auth/register
@@ -302,6 +307,8 @@ Money Leak Detection
 Financial Health
    ↓
 Recommendations
+
+
 🧠 Why SpendWise?
 
 Traditional expense tracking:
@@ -330,6 +337,7 @@ Rule-based detection depends on configured thresholds.
 AI-generated insights depend on the quality of the input data.
 AI-generated content is informational and not professional financial advice.
 Automatic bank synchronization is outside the core system unless separately integrated.
+
 🔮 Future Scope
 Bank transaction integration
 Advanced machine-learning-based spending analysis
