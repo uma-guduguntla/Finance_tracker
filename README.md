@@ -1,237 +1,341 @@
-# Finance_tracker
-# 💸 Smart Spending Analyzer
+Replace your entire current README.md with this:
 
-A full-stack financial management system that helps users **track expenses, detect hidden money leaks, and analyze spending behavior** using a rule-based intelligent engine.
+# 💸 SpendWise – Smart Spending Analyzer
+
+> A full-stack personal finance platform that helps users track expenses, monitor budgets, analyze spending behavior, detect potential money leaks, track financial goals, and receive AI-assisted insights.
 
 ---
 
 ## 📌 Overview
 
-Smart Spending Analyzer is designed to go beyond traditional expense trackers. Instead of just recording transactions, the system analyzes user spending patterns and provides **actionable insights** to improve financial habits.
+**SpendWise** goes beyond traditional expense tracking.
 
----
+Instead of only answering:
 
-## 🚀 Features
+> "How much did I spend?"
 
-### 🔐 Authentication
+SpendWise focuses on:
 
-* User Registration & Login
-* Secure authentication (JWT-based)
-* Password encryption
+> "How am I spending, why is this pattern occurring, and where can I improve?"
 
-### 💰 Expense Management
+The application processes expense data through backend business logic and analysis rules to identify spending patterns and convert them into meaningful financial insights.
 
-* Add, edit, delete expenses
-* Categorization (Food, Transport, Shopping, Bills, Others)
-* View complete transaction history
+### Core Flow
 
-### 🧠 Smart Analysis Engine
+```text
+Transactions
+     ↓
+Spending Patterns
+     ↓
+Financial Behavior
+     ↓
+Financial Insights
+     ↓
+Better Decisions
+✨ Features
+🔐 Authentication
+User registration and login
+JWT-based authentication
+Password hashing
+Protected APIs
+User-level authorization
+💰 Expense Management
+Add expenses
+View expenses
+Edit expenses
+Delete expenses
+Categorize transactions
+Search and filter spending
+🕵️ Money Leak Detection
 
-* Detect frequent small-value transactions
-* Identify recurring expenses (subscriptions)
-* Detect category-wise overspending
-* Highlight “money leaks”
+Identifies potentially inefficient spending patterns such as:
 
-### 📊 Dashboard & Analytics
+Frequent small-value transactions
+Recurring expenses
+Category overspending
+Unusual spending patterns where supported
 
-* Total spending overview
-* Category-wise breakdown (Pie chart)
-* Monthly trends (Graph)
-* Leak alerts & insights
+Example:
 
-### 💡 Explanation Engine
+₹50 + ₹80 + ₹60 + ₹70 + ₹90
+              ↓
+          ₹350 total
+              ↓
+    Repeated spending pattern
+              ↓
+       Potential Money Leak
 
-* Generates human-readable insights
-* Example:
+The initial detection layer uses explainable rule-based analysis.
 
-  * "You are spending frequently on food delivery"
-  * "Your shopping expenses increased significantly this month"
+📊 Spending Analytics
+Monthly spending analysis
+Category-wise spending
+Spending trends
+Average spending
+Budget utilization
+Expense frequency
+Visual dashboards and charts
+💵 Budget Tracking
+Create and monitor budgets
+Track actual spending
+Calculate remaining budget
+Calculate utilization
+Identify overspending
+🎯 Financial Goals
+Create financial goals
+Track saved amount
+Calculate progress
+Calculate remaining amount
+Estimate required contribution
+💡 Smart Recommendations
 
----
+Recommendations are generated from:
 
-## 🏗️ System Architecture
+Expense Patterns
+       +
+Budget Status
+       +
+Money Leaks
+       +
+Goal Progress
+       ↓
+Recommendations
+🤖 Gemini AI Integration
 
-```
-Frontend (React)
-        ↓
-REST API (Spring Boot Controllers)
-        ↓
-Service Layer (Analysis & Business Logic)
-        ↓
-Repository Layer (JPA)
-        ↓
-MySQL Database
-```
+Google Gemini can provide an additional natural-language intelligence layer.
 
----
+User Expenses
+     ↓
+Spring Boot
+     ↓
+Rule-Based Analysis
+     ↓
+Detected Patterns
+     ↓
+Gemini AI
+     ↓
+Insights & Recommendations
 
-## 🛠️ Tech Stack
+The rule engine handles deterministic calculations, while Gemini can assist with explanations, behavioral summaries, and recommendations.
 
-### Frontend
+🏗️ Architecture
 
-* React.js
-* Tailwind CSS
-* Chart.js / Recharts
+SpendWise follows a layered full-stack architecture:
 
-### Backend
+┌─────────────────────┐
+│    React Frontend   │
+│ Dashboard           │
+│ Expenses            │
+│ Budget              │
+│ Analytics           │
+│ Money Leaks         │
+│ Goals               │
+└──────────┬──────────┘
+           │
+        REST API
+           │
+           ▼
+┌─────────────────────┐
+│    Spring Boot      │
+│ Controllers         │
+│ Services            │
+│ Security            │
+│ Analysis Engine     │
+└──────────┬──────────┘
+           │
+     ┌─────┴─────┐
+     │           │
+     ▼           ▼
+┌──────────┐  ┌──────────┐
+│  MySQL   │  │ Gemini AI│
+│ Database │  │ Insights │
+└──────────┘  └──────────┘
+Backend Structure
+Controller
+    ↓
+Service
+    ↓
+Repository
+    ↓
+MySQL
 
-* Java
-* Spring Boot
-* Spring Data JPA (Hibernate)
+The backend uses Spring Data JPA for database persistence.
 
-### Database
+🛠️ Tech Stack
+Layer	Technologies
+Frontend	React
+Backend	Java, Spring Boot
+Security	Spring Security, JWT
+Database	MySQL
+ORM	Spring Data JPA / Hibernate
+AI	Google Gemini API
+Build Tool	Maven
+Version Control	Git, GitHub
+📁 Project Structure
+SpendWise/
+│
+├── frontend/
+│   └── src/
+│       ├── components/
+│       ├── pages/
+│       ├── services/
+│       ├── context/
+│       ├── routes/
+│       └── assets/
+│
+├── backend/
+│   └── src/
+│       └── main/
+│           └── java/
+│               ├── controller/
+│               ├── service/
+│               ├── repository/
+│               ├── entity/
+│               ├── dto/
+│               ├── security/
+│               └── config/
+│
+└── README.md
+🔌 API Overview
+Authentication
+POST /api/auth/register
+POST /api/auth/login
+Expenses
+GET    /api/expenses
+POST   /api/expenses
+PUT    /api/expenses/{id}
+DELETE /api/expenses/{id}
+Budgets
+GET  /api/budget
+POST /api/budget
+Money Leaks
+GET /api/money-leaks
+POST /api/money-leaks/analyze
+PUT /api/money-leaks/{id}/fix
+GET /api/money-leaks/summary
+Analytics
+GET /api/analysis/dashboard
+GET /api/analysis/recommendations
 
-* MySQL
+API endpoints should always match the current backend implementation.
 
-### Tools
+🔐 Security
 
-* IntelliJ IDEA
-* Maven
-* Git & GitHub
+SpendWise handles personal financial information, so security is an important part of the architecture.
 
----
+JWT-based authentication
+Password hashing
+Protected endpoints
+User-level authorization
+Input validation
+CORS configuration
+Environment-based secrets
 
-## 📂 Project Structure
+Sensitive values such as database credentials, JWT secrets, and API keys are kept outside source control.
 
-```
-smartspending
- ├── controller
- ├── service
- ├── repository
- ├── entity
- ├── dto
- ├── config
- └── SmartspendingApplication.java
-```
+🚀 Getting Started
+Prerequisites
 
----
+Make sure you have:
 
-## 🗄️ Database Schema
-
-### Users
-
-* id
-* name
-* email
-* password
-
-### Expenses
-
-* id
-* user_id
-* amount
-* category
-* description
-* date
-
-### Leak_Explanations
-
-* id
-* user_id
-* type
-* explanation
-* detected_at
-
----
-
-## 🔌 API Endpoints
-
-### Auth
-
-* `POST /api/auth/register`
-* `POST /api/auth/login`
-
-### Expenses
-
-* `POST /api/expenses`
-* `GET /api/expenses`
-* `PUT /api/expenses/{id}`
-* `DELETE /api/expenses/{id}`
-
-### Analysis
-
-* `GET /api/analysis/leaks`
-* `GET /api/analysis/dashboard`
-
----
-
-## ⚙️ Setup Instructions
-
-### 1. Clone Repository
-
-```
-git clone https://github.com/your-username/smart-spending-analyzer.git
-cd smart-spending-analyzer
-```
-
-### 2. Configure Database
-
-Create MySQL database:
-
-```
+Java
+Maven
+Node.js
+npm
+MySQL
+Git
+1. Clone the repository
+git clone https://github.com/uma-guduguntla/Finance_tracker.git
+cd Finance_tracker
+2. Create the database
 CREATE DATABASE smart_spending;
-```
+3. Configure environment variables
 
-Update `application.properties`:
+Configure the following variables locally:
 
-```
-spring.datasource.url=jdbc:mysql://localhost:3306/smart_spending
-spring.datasource.username=root
-spring.datasource.password=your_password
-```
+DB_USERNAME
+DB_PASSWORD
+JWT_SECRET
+GEMINI_API_KEY
 
-### 3. Run Backend
+Do not commit secrets or API keys to Git.
 
-```
+4. Run the backend
+cd backend
 mvn spring-boot:run
-```
 
-Backend will start at:
+Backend:
 
-```
 http://localhost:8080
-```
-
-### 4. Run Frontend
-
-```
+5. Run the frontend
+cd frontend
 npm install
-npm start
-```
 
----
+Then run the project's configured development script.
 
-## 📈 Future Enhancements
+🔄 Data Flow
 
-* AI-based spending prediction
-* Budget recommendation system
-* Mobile app (Android/iOS)
-* Bank API integration
-* Personalized financial planning
+When a user adds an expense:
 
----
+React Expense Form
+       ↓
+REST API
+       ↓
+Expense Controller
+       ↓
+Expense Service
+       ↓
+Validation
+       ↓
+Repository
+       ↓
+MySQL
 
-## ⚠️ Limitations
+The expense can then contribute to:
 
-* Rule-based system (not adaptive like ML models)
-* Depends on user input accuracy
-* Limited predictive capabilities
+Analytics
+   ↓
+Budget Analysis
+   ↓
+Money Leak Detection
+   ↓
+Financial Health
+   ↓
+Recommendations
+🧠 Why SpendWise?
 
----
+Traditional expense tracking:
 
-## 🎯 Key Highlight
+Record → Categorize → Display
 
-> This system does not just track expenses — it analyzes behavior and detects hidden financial leaks.
+SpendWise:
 
----
+Record
+  ↓
+Categorize
+  ↓
+Analyze
+  ↓
+Detect
+  ↓
+Explain
+  ↓
+Recommend
 
-## 👨‍💻 Contributors
+The key idea is to transform raw transactions into understandable spending behavior and actionable insights.
 
-* Your Name
-* Team Members
-
----
-
-## 📄 License
-
-This project is developed for academic purposes.
+⚠️ Limitations
+Analysis quality depends on the accuracy of entered transaction data.
+Rule-based detection depends on configured thresholds.
+AI-generated insights depend on the quality of the input data.
+AI-generated content is informational and not professional financial advice.
+Automatic bank synchronization is outside the core system unless separately integrated.
+🔮 Future Scope
+Bank transaction integration
+Advanced machine-learning-based spending analysis
+Anomaly detection
+Predictive budgeting
+Mobile application
+Family/group financial management
+Budget and spending notifications
+Conversational financial-analysis assistant
